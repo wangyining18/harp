@@ -6,20 +6,19 @@ title: Harp-DAAL Framework
 
 ## What is Harp-DAAL? 
 
-Harp-DAAL is a new framework that aims to run data analytics algorithms on distributed HPC architectures. The framework consists of two layers. A communication layer is handled by Harp, 
+Harp-DAAL is a new framework that aims to run data analytics algorithms on distributed HPC architectures. This framework consists of two layers: a communication layer and a computation layer. A communication layer is handled by Harp, 
 a communication library plug-in into Hadoop ecosystem. A computation layer is handled by Intel's Data Analytics Acceleration Library (DAAL), which is a library that provides 
 the users of highly optimized building blocks for data analytics and machine learning applications on Intel's architectures. 
 
 
-Compared to contemporary communication libraries, such as Hadoop and Spark, Harp has the advantages as follows:
+Compared to contemporary communication libraries, such as Hadoop and Spark, Harp has the following advantages:
 
-* Harp has MPI-like collective communication operations that are highly optimized for big data problems.
-* Harp has efficient and innovative computation models for different machine learning problems.
+* MPI-like collective communication operations that are highly optimized for big data problems.
+* Efficient and innovative computation models for different machine learning problems.
 
 However, the original Harp framework only supports development of Java applications, which is a common choice within the Hadoop ecosystem. 
 The downside of the pure Java implementation is the lack of support for emerging new hardware architectures such as Intel's Xeon Phi. 
-By invoking DAAL's native kernels, applications can leverage the huge number of threads on many-core platforms, which is a tremendous 
-advantages for computation-intensive data analytics algorithms. This is also the tendency of merging HPC and Big Data domain. 
+By invoking DAAL's native kernels, applications can leverage a huge number of threads on many-core platforms, which is an advantage for computation-intensive data analytics algorithms. This is also the tendency of merging HPC and Big Data domain. 
 
 ![Figure 1 Harp-DAAL within HPC-BigData Stack](/img/6-1-2.png)
 
@@ -27,8 +26,8 @@ Figure 1 shows the position of Harp-DAAL within the whole HPC-Big Data software 
 
 ## How to build a Harp-DAAL Application ?
 
-If you already have a legacy Harp application codes, you need only identify the local computation module, and replace it by invoking correspondent 
-DAAL kernels. Although DAAL's kernels are written in C/C++, it does provide users of a Java API. The API is highly packaged, and the users only need
+If a legacy Harp application codes already exists, you need only to identify the local computation module, and replaces it by invoking correspondent 
+DAAL kernels. Although DAAL's kernels are written in C/C++, they provide users of a Java API. The API is highly packaged, and the users only need
 a few lines of codes to finish the invocation of kernels. For instance, the main function of a PCA application in DAAL is shown as below: 
 
 ```java
@@ -59,23 +58,23 @@ public static void main(String[] args) throws java.io.FileNotFoundException, jav
 }
 ```
 
-DAAL's Java API is usually contains the following objects:
+DAAL's Java API usually contains the following objects:
 
 * Data: user's data packed in DAAL's data structure, e.g., NumericTable, DataCollection 
-* Algorithm:  the engine of machine learning, each has three modes: Batch, Distri, Online 
+* Algorithm: the engine of machine learning, each has three modes: Batch, Distri, Online 
 * Input: the user's input data to Algorithm 
 * Parameter: the parameters provided by users during the running of algorithms
 * Result: the feedback of Algorithm after running, retrieved by users
 
-Before invoking your DAAL kernels, you shall well choose the data structure that is most suitable to your problem. For many NumericTable types, 
-the Java API provides two ways of storing data. The first way is to store data on the JVM heap side, and whenever the native computation kernels require 
-the dataset, it will automatically copy the data from JVM heap to the off-heap memory space. The second way is to store data on Java's direct byte buffer, and 
-native computation kernels can access them directly without any data copy. Therefore, you should evaluate the overhead of loading and writing data from memory 
-in your application. For many data-intensive applications, it is wise to store the data on the direct byte buffer. 
+Before invoking your DAAL kernels, you can choose the data structure that is suitable to your problem. For many NumericTable types, 
+the Java API provides two ways of storing data. One is to store data on the JVM heap side, and whenever the native computation kernels require 
+the dataset, it will automatically copy the data from JVM heap to the off-heap memory space. The other way is to store data on Java's direct byte buffer, and 
+native computation kernels can access them directly without any data copy. Therefore, you need to evaluate the overhead of loading and writing data from memory 
+in your application. For many data-intensive applications, it is better to store the data on the direct byte buffer. 
 
-If you build your Harp-DAAL application from scratch, you should also well choose the data structure on the Harp side. The thumb rule is to allocate data in 
-contiguous primitive Java array, because most of DAAL's Java API only accepts primitive array as input arguments. If you use Harp's own Table structure, the 
-contained data is distributed into different partitions, then you may use the Harp-DAAL data conversion API to transfer the data between a Harp table and a DAAL
+If you build your Harp-DAAL application from scratch, you should also choose the data structure on the Harp side carefully. The thumb rule is to allocate data in 
+contiguous primitive Java array because most of DAAL's Java API only accepts primitive array as input arguments. If you use Harp's own Table structure, the 
+contained data will be distributed into different partitions, then you may use the Harp-DAAL data conversion API to transfer the data between a Harp table and a DAAL
 table. 
 
 ### Harp-DAAL Data Conversion API
@@ -88,7 +87,7 @@ between Harp's data structure and that of DAAL.
 * HomogenTableHarpMap: convert data between DAAL's HomogenNumericTable and Harp's map
 * HomogenTableHarpTable: convert data between DAAL's HomogenNumericTable and Harp's table
 
-Within the *RotatorDaal*, the data transfer between Harp and DAAL is also overlapped by the computation work in another pipeline. Thus, if there is enough computation workload, the 
+Within the *RotatorDaal*, the data transfer between Harp and DAAL are also overlapped by the computation work in another pipeline. Thus, if there is enough computation workload, the 
 overhead of data conversion could be significantly reduced. It is also very straightforward to invoke these conversion tools. 
 
 ```java
